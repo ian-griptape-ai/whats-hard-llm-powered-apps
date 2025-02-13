@@ -1,7 +1,7 @@
 # What's Hard with LLM-Powered App Development?
 ## Demo App Samples
 
-All samples require an OpenAI API key to be set in the `OPENAI_API_KEY` environment variable. Copy [env.example(./env.example)] and edit it to add you your own OpenAI API key to do that quickly. The python-dotenv import will set the environment variable automatically from that file
+All samples require an OpenAI API key to be set in the `OPENAI_API_KEY` environment variable. Copy [env.example](./env.example) and edit it to add you your own OpenAI API key to do that quickly. The python-dotenv import will set the environment variable automatically from that file
 
 * [**boooking_agent_test.py**](./boooking_agent_test.py) - Shows how to model agentic systems as Structures with the Griptape Framework. 
 * [**math_multi_model.py**](./math_multi_model.py) - Very simple demo that asks three different LLMs to perform math calculations. Requires local Ollama with `mistral` and `llama3.2` models in addition to an OpenAI API key.
