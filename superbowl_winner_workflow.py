@@ -7,6 +7,7 @@ from griptape.drivers.prompt.ollama import OllamaPromptDriver
 from griptape.tools import DateTimeTool, WebSearchTool
 from griptape.drivers.web_search.google import GoogleWebSearchDriver
 from griptape.utils import StructureVisualizer
+from griptape.rules import Rule
 import os
 
 load_dotenv()
@@ -23,7 +24,7 @@ get_todays_date_task = PromptTask(
 )
 
 who_won_the_superbowl_task = PromptTask(
-    "Who won the closest Super Bowl to today's date: {{ parent_outputs['get_todays_date'] }}",
+    "Who won the Super Bowl this year: {{ parent_outputs['get_todays_date'] }}",
     prompt_driver=OllamaPromptDriver(model="llama3.2"),
     tools=[WebSearchTool(web_search_driver=websearchdriver)],
     id="who_won_the_superbowl",

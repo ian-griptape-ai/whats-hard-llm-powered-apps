@@ -4,6 +4,8 @@ from griptape.drivers.vector.pgvector_vector_store_driver import (
     PgVectorVectorStoreDriver,
 )
 from griptape.structures import Agent
+from griptape.drivers.prompt.anthropic import AnthropicPromptDriver
+from griptape.rules import Rule
 from griptape.tools import VectorStoreTool
 import os
 from griptape.utils import Chat
@@ -38,9 +40,24 @@ tool = VectorStoreTool(
 
 # Create the agent
 agent = Agent(
-    "Provide only the material contained in the DB about the judgement in providing your answers.",
+    prompt_driver=AnthropicPromptDriver(
+        model="claude-3-7-sonnet-20250219"  # , stream=True
+    ),
     tools=[tool],
-    stream=True,
+    rules=[
+        Rule(
+            "Use only the information contained in the DB about the judgement in providing your answers.",
+        ),
+        Rule("You are a legal assistant."),
+        Rule(
+            "Never provide the names of any individuals including witnesses in your responses. Rather than using names, use job titles or roles"
+        ),
+        Rule(
+            "Check your answers to ensure that you have completely removed the names of any individuals before giving your final response."
+        ),
+        Rule("Always respect the privacy of individuals."),
+        Rule("Keep your answers concise. Only answer the question asked."),
+    ],
 )
 
 # Run the agent
