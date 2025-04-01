@@ -1,7 +1,9 @@
 from griptape.structures import Agent
 from griptape.rules import Rule
-from griptape.tools import StructureRunTool, DateTimeTool, CalculatorTool
-from griptape.drivers import LocalStructureRunDriver
+from griptape.tools import StructureRunTool, DateTimeTool
+from griptape.drivers.structure_run.local_structure_run_driver import (
+    LocalStructureRunDriver,
+)
 
 from griptape.events import (
     StartStructureRunEvent,
@@ -9,12 +11,26 @@ from griptape.events import (
     FinishActionsSubtaskEvent,
 )
 
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+
+from griptape.drivers.observability.open_telemetry import (
+    OpenTelemetryObservabilityDriver,
+)
+from griptape.observability import Observability
+
+
 from griptape.utils import Chat  #   <-- Added Chat
 import schema
 from dotenv import load_dotenv
 from rich.pretty import pprint
 
 load_dotenv()
+
+observability_driver = OpenTelemetryObservabilityDriver(
+    service_name="hotel-booking-agent-testing",
+    span_processor=BatchSpanProcessor(OTLPSpanExporter()),
+)
 
 
 def request_date_checker_agent() -> Agent:
@@ -24,7 +40,9 @@ def request_date_checker_agent() -> Agent:
         rules=[
             Rule("You are a request date checker"),
             Rule("You check the dates of the request to ensure they are valid"),
-            Rule("If the date of a request is in the past it is invalid"),
+            Rule(
+                "If any of the dates in the a request are in the past the requests is invalid"
+            ),
         ],
     )
 
@@ -123,14 +141,16 @@ def hotel_manager_agent() -> Agent:
     )
 
 
-for event in hotel_manager_agent().run_stream(
-    "book a superior room from 1st to 3rd of August 2026 for 2 guests"
-):
-    if isinstance(event, StartStructureRunEvent):
-        pprint(event.structure_id)
-    if isinstance(event, TextChunkEvent):
-        print(f"{event.token}", end="", flush=True)
-    elif isinstance(event, FinishActionsSubtaskEvent):
-        pprint(event.subtask_actions)
+with Observability(observability_driver=observability_driver):
+    for event in hotel_manager_agent().run_stream(
+        "book a superior room from 1st to 3rd of August 2026 for 2 guests"
+    ):
+        if isinstance(event, StartStructureRunEvent):
+            pprint(event.structure_id)
+        if isinstance(event, TextChunkEvent):
+            print(f"{event.token}", end="", flush=True)
+        elif isinstance(event, FinishActionsSubtaskEvent):
+            pprint(event.subtask_actions)
 
-# Chat(hotel_manager_agent()).start()  #   <-- Added Chat
+# with Observability(observability_driver=observability_driver):
+#    Chat(hotel_manager_agent()).start()  #   <-- Added Chat
